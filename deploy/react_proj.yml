@@ -19,7 +19,7 @@
       
   tasks:
     - name: Install Node.js and npm using shell
-      shell: apt-get update && apt-get install -y nodejs npm
+      shell: apt update && apt install -y nodejs npm
       delegate_to: localhost
       run_once: true
       become: no
