@@ -12,45 +12,26 @@
       delegate_to: localhost
       delegate_facts: true
       run_once: true
+      become: no
       
   tasks:
-    - name: Install Node.js and npm (Windows)
-      win_chocolatey:
-        name: 
-          - nodejs
-          - npm
-        state: present
-      delegate_to: localhost
-      run_once: true
-      when: ansible_os_family == "Windows"
-      
-    - name: Install Node.js and npm (Debian/Ubuntu)
+    - name: Install Node.js and npm (Proxmox container)
       apt:
         name: 
           - nodejs
           - npm
         state: present
+        update_cache: yes
       delegate_to: localhost
       run_once: true
-      become: yes
-      when: ansible_os_family == "Debian"
-      
-    - name: Install Node.js and npm (RedHat/CentOS)
-      yum:
-        name: 
-          - nodejs
-          - npm
-        state: present
-      delegate_to: localhost
-      run_once: true
-      become: yes
-      when: ansible_os_family == "RedHat"
+      become: no
 
     - name: Install project dependencies
       npm:
         path: "{{ playbook_dir }}"
       delegate_to: localhost
       run_once: true
+      become: no
       environment:
         PATH: "{{ ansible_env.PATH }}"
 
@@ -60,6 +41,7 @@
         chdir: "{{ playbook_dir }}"
       delegate_to: localhost
       run_once: true
+      become: no
       environment:
         PATH: "{{ ansible_env.PATH }}"
 
