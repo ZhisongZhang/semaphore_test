@@ -5,22 +5,54 @@
   vars:
     local_build_path: "./build"
     remote_path: "/var/www/html"
-    
+  
+  pre_tasks:
+    - name: Gather facts about localhost
+      setup:
+      delegate_to: localhost
+      delegate_facts: true
+      run_once: true
+      
   tasks:
-    - name: Install Node.js and npm
-      package:
+    - name: Install Node.js and npm (Windows)
+      win_chocolatey:
         name: 
           - nodejs
           - npm
         state: present
       delegate_to: localhost
       run_once: true
+      when: ansible_os_family == "Windows"
+      
+    - name: Install Node.js and npm (Debian/Ubuntu)
+      apt:
+        name: 
+          - nodejs
+          - npm
+        state: present
+      delegate_to: localhost
+      run_once: true
+      become: yes
+      when: ansible_os_family == "Debian"
+      
+    - name: Install Node.js and npm (RedHat/CentOS)
+      yum:
+        name: 
+          - nodejs
+          - npm
+        state: present
+      delegate_to: localhost
+      run_once: true
+      become: yes
+      when: ansible_os_family == "RedHat"
 
     - name: Install project dependencies
       npm:
         path: "{{ playbook_dir }}"
       delegate_to: localhost
       run_once: true
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
 
     - name: Build React project
       command: npm run build
@@ -28,6 +60,8 @@
         chdir: "{{ playbook_dir }}"
       delegate_to: localhost
       run_once: true
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
 
     - name: Create remote directory
       file:
