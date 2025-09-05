@@ -3,7 +3,10 @@
   hosts: all
   become: yes
   vars:
-    local_build_path: "./build"
+    # Assuming the repository is already cloned by Semaphore
+    project_path: "{{ playbook_dir }}/../gpsnet_report_projects"  # Path relative to playbook directory
+    frontend_path: "{{ playbook_dir }}/../gpsnet_report_projects/gpsnet_file_completeness/gpsnet_file_completeness_frontend"
+    local_build_path: "{{ playbook_dir }}/../gpsnet_report_projects/gpsnet_file_completeness/gpsnet_file_completeness_frontend/build"
     remote_path: "/var/www/html"
   
   pre_tasks:
@@ -22,5 +25,174 @@
           - npm
         state: present
         update_cache: yes
+      delegate_to: localhost
+      run_once: true
+      become: no
 
-    
+    - name: Install project dependencies
+      npm:
+        path: "{{ frontend_path }}"
+        state: present
+      delegate_to: localhost
+      run_once: true
+      become: no
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
+
+    - name: Build React project
+      command: npm run build
+      args:
+        chdir: "{{ frontend_path }}"
+      delegate_to: localhost
+      run_once: true
+      become: no
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
+
+    - name: Create remote directory
+      file:
+        path: "{{ remote_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Transfer build files to remote host
+      synchronize:
+        src: "{{ local_build_path }}/"
+        dest: "{{ remote_path }}/"
+        delete: yes
+        recursive: yes
+      delegate_to: localhost
+
+    - name: Set proper permissions
+      file:
+        path: "{{ remote_path }}"
+        owner: www-data
+        group: www-data
+        mode: '0755'
+        recurse: yes
+
+    - name: Install project dependencies
+      npm:
+        path: "{{ frontend_path }}"
+        state: present
+      delegate_to: localhost
+      run_once: true
+      become: no
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
+
+    - name: Build React project
+      command: npm run build
+      args:
+        chdir: "{{ frontend_path }}"
+      delegate_to: localhost
+      run_once: true
+      become: no
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
+
+    - name: Create remote directory
+      file:
+        path: "{{ remote_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Transfer build files to remote host
+      synchronize:
+        src: "{{ local_build_path }}/"
+        dest: "{{ remote_path }}/"
+        delete: yes
+        recursive: yes
+      delegate_to: localhost
+
+    - name: Set proper permissions
+      file:
+        path: "{{ remote_path }}"
+        owner: www-data
+        group: www-data
+        mode: '0755'
+        recurse: yes
+
+    - name: Install project dependencies
+      npm:
+        path: "{{ frontend_path }}"
+        state: present
+      delegate_to: localhost
+      run_once: true
+      become: no
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
+
+    - name: Build React project
+      command: npm run build
+      args:
+        chdir: "{{ frontend_path }}"
+      delegate_to: localhost
+      run_once: true
+      become: no
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
+
+    - name: Create remote directory
+      file:
+        path: "{{ remote_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Transfer build files to remote host
+      synchronize:
+        src: "{{ local_build_path }}/"
+        dest: "{{ remote_path }}/"
+        delete: yes
+        recursive: yes
+      delegate_to: localhost
+
+    - name: Set proper permissions
+      file:
+        path: "{{ remote_path }}"
+        owner: www-data
+        group: www-data
+        mode: '0755'
+        recurse: yes
+
+    - name: Install project dependencies
+      npm:
+        path: "{{ frontend_path }}"
+        state: present
+      delegate_to: localhost
+      run_once: true
+      become: no
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
+
+    - name: Build React project
+      command: npm run build
+      args:
+        chdir: "{{ frontend_path }}"
+      delegate_to: localhost
+      run_once: true
+      become: no
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
+
+    - name: Create remote directory
+      file:
+        path: "{{ remote_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Transfer build files to remote host
+      synchronize:
+        src: "{{ local_build_path }}/"
+        dest: "{{ remote_path }}/"
+        delete: yes
+        recursive: yes
+      delegate_to: localhost
+
+    - name: Set proper permissions
+      file:
+        path: "{{ remote_path }}"
+        owner: www-data
+        group: www-data
+        mode: '0755'
+        recurse: yes
