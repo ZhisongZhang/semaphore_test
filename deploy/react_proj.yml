@@ -18,30 +18,34 @@
       become: no
       
   tasks:
-    - name: Install Node.js and npm using shell
-      shell: apt update && apt install -y nodejs npm
+    - name: Check if Node.js is already installed
+      shell: command -v node || echo "not found"
       delegate_to: localhost
       run_once: true
       become: no
-      args:
-        executable: /bin/bash
-      register: node_install
-      failed_when: node_install.rc != 0 and "already the newest version" not in node_install.stderr
+      register: node_exists
       ignore_errors: yes
-
-    - name: Check if Node.js is installed
-      shell: node --version
+      
+    - name: Check if npm is already installed
+      shell: command -v npm || echo "not found"
       delegate_to: localhost
       run_once: true
       become: no
-      register: node_version
+      register: npm_exists
       ignore_errors: yes
-
-    - name: Debug Node.js version
+      
+    - name: Show Node.js and npm status
       debug:
-        var: node_version.stdout
-      when: node_version.rc == 0
-
+        msg: 
+          - "Node.js status: {{ 'Found' if 'not found' not in node_exists.stdout else 'Not found' }}"
+          - "npm status: {{ 'Found' if 'not found' not in npm_exists.stdout else 'Not found' }}"
+      
+    # Skip Node.js installation tasks if they are already installed
+    - name: Skip Node.js installation note
+      debug:
+        msg: "Node.js and npm appear to be already installed. Skipping installation."
+      when: "'not found' not in node_exists.stdout and 'not found' not in npm_exists.stdout"
+      
     - name: Install project dependencies
       npm:
         path: "{{ frontend_path }}"
@@ -51,6 +55,38 @@
       become: no
       environment:
         PATH: "{{ ansible_env.PATH }}"
+
+    - name: Build React project
+      command: npm run build
+      args:
+        chdir: "{{ frontend_path }}"
+      delegate_to: localhost
+      run_once: true
+      become: no
+      environment:
+        PATH: "{{ ansible_env.PATH }}"
+
+    - name: Create remote directory
+      file:
+        path: "{{ remote_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Transfer build files to remote host
+      synchronize:
+        src: "{{ local_build_path }}/"
+        dest: "{{ remote_path }}/"
+        delete: yes
+        recursive: yes
+      delegate_to: localhost
+
+    - name: Set proper permissions
+      file:
+        path: "{{ remote_path }}"
+        owner: www-data
+        group: www-data
+        mode: '0755'
+        recurse: yes
 
     - name: Build React project
       command: npm run build
