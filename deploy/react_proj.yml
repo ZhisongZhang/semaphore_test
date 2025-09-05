@@ -15,16 +15,13 @@
       become: no
       
   tasks:
-    - name: Install Node.js and npm (Proxmox container)
+    - name: Install Node.js and npm
       apt:
         name: 
           - nodejs
           - npm
         state: present
         update_cache: yes
-      delegate_to: localhost
-      run_once: true
-      become: no
 
     - name: Install project dependencies
       npm:
