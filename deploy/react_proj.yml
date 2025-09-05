@@ -7,23 +7,11 @@
     remote_repo_path: "/projects/react"
   
   tasks:
-    - name: Install Git
-      package:
-        name: git
-        state: present
-      
-    - name: Ensure project directory exists
-      file:
-        path: "{{ remote_repo_path }}"
-        state: directory
-        mode: '0755'
-        
-    - name: Clone the repository to the remote server
+    - name: git clone the repository
       git:
         repo: "{{ github_repo }}"
-        dest: "{{ remote_repo_path }}/gpsnet_report_projects"
-        clone: yes
-        update: yes
-        accept_hostkey: yes
+        dest: "{{ remote_repo_path }}"
+        version: "main"
+        force: yes
       
     
