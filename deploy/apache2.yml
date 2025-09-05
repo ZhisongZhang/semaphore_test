@@ -1,0 +1,31 @@
+---
+- name: Install and configure Apache2 on Ubuntu
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Apache2
+      apt:
+        name: apache2
+        state: present
+
+    - name: Start and enable Apache2 service
+      systemd:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Configure firewall to allow HTTP traffic
+      ufw:
+        rule: allow
+        port: '80'
+        proto: tcp
+
+    - name: Configure firewall to allow HTTPS traffic
+      ufw:
+        rule: allow
+        port: '443'
+        proto: tcp
